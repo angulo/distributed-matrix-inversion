@@ -1,0 +1,121 @@
+\documentclass[a4paper,10pt,oneside]{article}
+
+\usepackage[english]{babel}
+\usepackage[utf8x]{inputenc}
+\usepackage{listingsutf8}
+\usepackage{graphicx}
+\usepackage{anysize}
+\usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{ucs}
+\usepackage{times}
+\usepackage{fancyhdr}
+\usepackage[section]{placeins}
+\marginsize{3cm}{2cm}{2cm}{2cm}
+\pagestyle{plain}
+\title{\hrulefill\\ \textbf{\begin{huge}DISTRIBUTED SYSTEMS ARCHITECTURE\end{huge}\\ \  \\ \begin{Large}\textbf{Lab Assignment 1: Distributed Matrix Inversion}\end{Large}}}
+\author{\textbf{\begin{Large}Javier Angulo Lucerón\end{Large}}\\ \textbf{\begin{large}$<$javier.angulo1@alu.uclm.es$>$\end{large}} \\ \\  \textbf{\begin{Large}César Mora Castro\end{Large}}\\ \textbf{\begin{large}$<$cesar.mora@alu.uclm.es$>$\end{large}} \\ \\ \textbf{\begin{large}Curso 2010 - 2011\end{large}}}
+\date{\textbf{\begin{large}Ingeniería Superior en Informática - Escuela Superior de Informática de Ciudad Real\end{large}}\\\hrulefill}
+
+%% Listado de código %%
+\usepackage{color}
+\definecolor{gray97}{gray}{.97}
+\definecolor{gray75}{gray}{.75}
+\definecolor{gray45}{gray}{.45}
+
+\lstset{ frame=Ltb,
+     framerule=0pt,
+     aboveskip=0.5cm,
+     framextopmargin=3pt,
+     framexbottommargin=3pt,
+     framexleftmargin=0.4cm,
+     framesep=0pt,
+     rulesep=.4pt,
+     backgroundcolor=\color{gray97},
+     rulesepcolor=\color{black},
+     %
+     stringstyle=\ttfamily,
+     showstringspaces = false,
+     basicstyle=\small\ttfamily,
+     commentstyle=\color{gray45},
+     keywordstyle=\bfseries,
+     %
+     numbers=left,
+     numbersep=15pt,
+     numberstyle=\tiny,
+     numberfirstline = false,
+     breaklines=true,
+		 inputencoding=utf8/latin1,
+		 extendedchars=true,
+     %
+     tabsize=2,
+   }
+
+% minimizar fragmentado de listados
+\lstnewenvironment{listing}[1][]
+   {\lstset{#1}\pagebreak[0]}{\pagebreak[0]}
+
+\lstdefinestyle{consola}
+   {basicstyle=\scriptsize\bf\ttfamily,
+    backgroundcolor=\color{gray75},
+   }
+
+\lstdefinestyle{C++}
+	 {language=c++,
+		basicstyle=\scriptsize\ttfamily,
+	 }
+
+
+\begin{document}
+\thispagestyle{empty}
+\maketitle
+\begin{figure}[b]
+\begin{center}
+\includegraphics[scale=0.4]{graficos/logouclm.png} 
+\\
+\large{\textbf{Universidad de Castilla la Mancha}}
+\end{center}
+\end{figure}
+\thispagestyle{empty}
+\FloatBarrier
+\newpage
+\tableofcontents
+\newpage
+\parskip 0.2cm
+
+\section{Problem}
+Design and implement a distributed system to do matrix inversion. Focus on large-scale matrix.
+
+\section{Algorithm}
+Having matrix inversion in mind, a few algorithms to obtain the inverse of a matrix appear. Considering that our system must be parallelizable, an algorithm with several parallel parts should be used. The best algorithm at this point is the one who uses determinants and the matrix of cofactors. However, if the matrix has long width, time becomes an unsolvable problem.
+
+Despite of the parallel grade of Gauss-Jordan algorithm, we consider that the best solution to be used. As can be read in any algebra book, this algorithm works in three steps:
+
+\begin{enumerate}
+\item Extend the original matrix, appending an identity one on the right.
+\item Obtain 0's below the main diagonal.
+\item Obtain 0's above the main diagonal.
+\end{enumerate}
+
+After that, the inverse matrix appears on the extended part. As can be noticed, some problems may appear. For example, one of the members or the main diagonal could be 0. In that case, the original matrix rows must be ordered. However, while running the algorithm, 0's can also appear. To solve this, a previous step should be carried in order to get the exact combination of rows that generates no problem. Nevertheless, some matrix are not invertible.
+
+Our system would be designed to solve simple problems where the source matrix is invertible without ordering its rows. If, suddenly, a 0 appear, the process will abort.
+
+\section{Components}
+The system will be composed of the following components:
+\begin{itemize}
+\item {\textbf Master:} prepares each pivot row and generates the list of works to be done. 
+\item {\textbf Alus:} represent the several worker nodes that make the arithmetic operations.
+\item {\textbf Store:} stores the matrix. Both Master and Alu nodes read and write the source matrix using this component. Every work done modifies the matrix. So, when all the works are done, the resulting matrix is in the store, and the Master can take it from it.
+\end{itemize}
+
+\section{Performance}
+As can be noticed, the nodes which have the most network and processor load are Master and Store nodes. To improve the performance, they should be deployed in different physical nodes. As many alu nodes as desired can be added. They can also be added in the middle of the algorithm. 
+
+An important limitation of the system is that alu nodes cannot be removed while the algorithm is running. This problem could be solved storing, in the master node, which works are asigned to each agent. Alu's state should be also monitorized to detect a failure.
+
+\section{Reference}
+See README file located at the main project directory for instructions to compile, deploy and use the software.
+
+\end{document}

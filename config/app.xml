@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- This file was written by IceGrid Admin -->
+<icegrid>
+   <application name="MatrixInversion">
+      <node name="Master">
+         <server id="MasterServer" activation="always" exe="../bin/MasterNode">
+            <properties>
+               <property name="Store.proxy" value="Store"/>
+               <property name="Adapter.name" value="MasterAdapter"/>
+               <property name="Ice.ThreadPool.Server.SizeMax" value="10000"/>
+               <property name="Ice.ThreadPool.Client.SizeMax" value="10000"/>
+            </properties>
+            <log path="logs/MasterStderr.txt" property="Ice.StdErr"/>
+            <log path="logs/MasterStdout.txt" property="Ice.StdOut"/>
+            <adapter name="MasterAdapter" endpoints="default" id="${server}.MasterAdapter">
+               <object identity="Master"/>
+            </adapter>
+         </server>
+      </node>
+      <node name="Store">
+         <server id="StoreServer" activation="always" exe="../bin/StoreNode">
+            <properties>
+               <property name="Adapter.name" value="StoreAdapter"/>
+               <property name="Ice.ThreadPool.Server.SizeMax" value="10000"/>
+               <property name="Ice.ThreadPool.Client.SizeMax" value="10000"/>
+            </properties>
+            <log path="logs/StoreStderr.txt" property="Ice.StdErr"/>
+            <log path="logs/StoreStdout.txt" property="Ice.StdOut"/>
+            <adapter name="StoreAdapter" endpoints="default" id="${server}.StoreAdapter">
+               <object identity="Store"/>
+            </adapter>
+         </server>
+      </node>
+   </application>
+</icegrid>

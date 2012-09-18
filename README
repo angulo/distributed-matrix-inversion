@@ -1,0 +1,72 @@
+Copyright (C) 2010 Javier Angulo, César Mora
+
+This file is part of Distributed Matrix Inversion
+
+Distributed Matrix Inversion is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+Distributed Matrix Inversion is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+You should have received a copy of the GNU General Public License along with Distributed Matrix Inversion.  If not, see <http://www.gnu.org/licenses/>. 
+
++------------------------------+
++ DISTRIBUTED MATRIX INVERSION +
++------------------------------+
+
+Distributed Matrix Inversion is a distributed software that can be used to invert matrix. It has three kind of components:
+
+- Master: controls the inversion assigning work to alus.
+- Store: stores and sends the matrix.
+- Alu's: reduce rows
+
+Each component can be deployed in a different node, improving significantly the performance. Follow the next steps:
+
+0.- Compile the system. ZeroC Ice >= 3.4.0 must be installed and the environment variable ICE_HOME must point to the installation directory.
+
+	~$ make 
+
+1.- Launch the store node. It must be launched first of all because the registry is collocated in that node. StoreNode.cfg and store.cfg MUST be edited to use the correct addressing parameters. File admin.cfg must be also edited with the address of the registry. When done, execute:
+
+	~$ cd config
+	~$ sh store.sh
+
+2.- Launch the master node. MasterNode.cfg and master.cfg MUST be edited to use the correct addressing parameters. When done, execute:
+	
+	~$ cd config
+	~$ sh master.sh
+
+3.- Add as many alus as you want. To do so, edit the file alu.cfg with the correct addressing parameters and execute:
+	
+	~$ cd config
+	~$ sh alu.sh <cfg_file>
+
+4.- Now, the system is ready to work. The source matrix must be passed in a file. An example of a valid file is in data/input.txt. If you want to test the system or to generate a pattern to modify, use the following command:
+	
+	~$ ./bin/Generator <file_name> <matrix_width>
+
+		With this, an identity matrix will be generated with file_name and width requested.
+
+5.- The last step, when the source matrix have been created, is launching the inversion. Like with the other nodes, main.cfg MUST be edited to provide the location of the registry. After that, execute:
+	
+	~$ cd config
+	~$ sh main.sh <input_file> <output_file>
+		
+If everything goes like planned, the result should be stored in the output file. If the matrix is not invertible, the system will show an advice. If an error occurs in the own system, it would abbort. To check the problem, log files located at config/logs/, config/db/MasterNode and config/db/StoreNode can be read. These are also a good way to the check the state of the system.
+
+If, for any reason, the system runs too slowly, alu nodes can be added to the system while it is running. On the other hand, if an alu node crashes of becomes unavailable, the system will crash.
+
+After using the system, it is recommended to clean it completely. To do so, it must be first stopped. Execute:
+	
+	~$ cd config.sh
+	~$ sh stop.sh
+
+Then, run:
+	
+	~$ sh clean.sh
+
+If you have any problem, do not hesistate to write to <javier.angulo@gmail.com> or <cesarmoracastro@gmail.com>.
+
+
+
++-------------+
++ Development +
++-------------+
+
+If you want to modify the system, start reading the slice html documentation generated in the directory doc/slice and the general documentation at doc/dmi/DMI.pdf
